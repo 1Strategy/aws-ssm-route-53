@@ -18,7 +18,7 @@ https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.htm
 #### Prerequisites
 * Installation of the AWS Command Line Interface
 ```
-  pip install aws-cli
+  pip install awscli
 ```
 
 * Installation of the session-manager-plugin:
