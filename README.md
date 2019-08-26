@@ -3,9 +3,9 @@
 ## ** Please note that this script is currently BETA **
 Please submit a and issue/pull requests with any suggestions.
 TODO:
-*Add support for Public IPs (via DNS entry)
-*Add support for IPs or instance ids (i-abc123)
-*Improve error handling
+* Add support for Public IPs (via DNS entry)
+* Add support for IPs or instance ids (i-abc123)
+* Improve error handling
 
 The purpose of this script is to server as a unified way to SSH OR SSM (start-session) into an EC2 instance using a Private Hosted Zone in Route 53 for DNS lookups. 
 
