@@ -18,12 +18,33 @@ Installation of the AWS Command Line Interface
 pip install aws-cli
 ```
 
-Installation of the session-manager-plugin:
+* Installation of the session-manager-plugin:
+
 https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html
 
-Updated ~/.ssh/config file to use SSM as a proxy:
+* Updated ~/.ssh/config file to use SSM as a proxy:
+
 https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-getting-started-enable-ssh-connections.html
 
+* IAM permissions to access SSM session manager
+
+
+## Installation
+* Clone the repo locally
+* `chmod +x ssh-into` to allow it to execute
+* Copy the `ssh-into` to your /usr/local/bin/ or otherwise add it to your `PATH`
+* `ssh-into []`
+
+### Optional - Add to AWS CLI
+
+Add the following block to `~/.aws/cli/alias`
+```ssh-into = 
+  !f() {
+    bash <path/to/ssh-into/installtion/location> $@
+  }; f
+```
+
+`aws ssh-into <server>.<domain>.com`
 
 
 
