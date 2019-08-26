@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 display_usage() { 
 	echo -e "Usage: ssh-into  [user@]server.domain.tld \n\t\t [-i|-identity_file <path to ssh file>] \n\t\t [-p|--profile <AWS Profile>]" 
@@ -10,25 +10,25 @@ USERNAME=""
 
 if [ "$1" == "" ]; then
     display_usage
-    exit
+    exit 0
 fi
 
-FULL_DOMAIN=$1
+FULL_DOMAIN="$1"
 shift
 
 while [ "$1" != "" ]; do
     case "$1" in
     -i | --identity_file)
         shift
-        SSH_KEY=$1
+        SSH_KEY="$1"
         ;;
     -p | --profile)
         shift
-        AWS_PROFILE=$1
+        AWS_PROFILE="$1"
         ;;
     *)
         display_usage
-        exit
+        exit 0
         ;;
     esac
     shift
@@ -39,31 +39,31 @@ done
 
 INPUT=$FULL_DOMAIN
 if [[ $INPUT =~ "@" ]]; then
-    USERNAME=$(echo $INPUT | cut -d \@ -f 1)
+    USERNAME="$(echo $INPUT | cut -d '@' -f 1)"
 fi
 
-SERVER=$(echo $INPUT | cut -d \@ -f 2 | cut -d \. -f 1)
-DOMAIN=$(echo $INPUT | sed -e s/$SERVER.// | cut -d \@ -f 2)
-PERMISSIONS_CHECK=$(aws route53 list-hosted-zones --query 'HostedZones[?Name ==`'$DOMAIN'.`].Id' --profile $AWS_PROFILE  > /dev/null 2>&1)
+SERVER="$(echo $INPUT | cut -d '@' -f 2 | cut -d '.' -f 1)"
+DOMAIN="$(echo $INPUT | sed -e s/$SERVER.// | cut -d '@' -f 2)"
+PERMISSIONS_CHECK="$(aws route53 list-hosted-zones --query 'HostedZones[?Name ==`'$DOMAIN'.`].Id' --profile $AWS_PROFILE  > /dev/null 2>&1)"
 
-if [ $? -ne 0 ]; then
+if (( $? != 0 )); then
     echo -e "You don't appear to have the correct permissions. \nPlease ensure the AWS profile that you're using has the correct Route 53 permissions."
-    exit
+    exit 1
 fi
 
-HOSTED_ZONE_ID=$(aws route53 list-hosted-zones --query 'HostedZones[?Name ==`'$DOMAIN'.`].Id' --profile $AWS_PROFILE | jq .[0] | cut -d'/' -f3 |cut -d'"' -f1)
+HOSTED_ZONE_ID="$(aws route53 list-hosted-zones --query 'HostedZones[?Name ==`'$DOMAIN'.`].Id' --profile $AWS_PROFILE | python -c 'import sys, json; print json.load(sys.stdin)[0]' | awk -F '/' '{print $3}' )"
 
 if [ "$HOSTED_ZONE_ID" == "null" ]; then
     echo -e "$DOMAIN doesn't appear to be Route 53 Private Hosted Zone in your account. Please double check the domain."
-    exit
+    exit 1
 fi
 
-PRIVATE_IP=$(aws route53 list-resource-record-sets --hosted-zone-id $HOSTED_ZONE_ID --query 'ResourceRecordSets[?contains(Name,`'$SERVER'`)].ResourceRecords[].Value' --profile $AWS_PROFILE | jq .[0] )
-INSTANCE_ID=$(aws ec2 describe-instances --profile $AWS_PROFILE --filters 'Name=private-ip-address,Values='$PRIVATE_IP'' --query 'Reservations[].Instances[0].InstanceId' --output text)
+PRIVATE_IP="$(aws route53 list-resource-record-sets --hosted-zone-id $HOSTED_ZONE_ID --query 'ResourceRecordSets[?contains(Name,`'$SERVER'`)].ResourceRecords[].Value' --profile $AWS_PROFILE | python -c 'import sys, json; print json.load(sys.stdin)[0]' )"
+INSTANCE_ID="$(aws ec2 describe-instances --profile $AWS_PROFILE --filters 'Name=private-ip-address,Values='$PRIVATE_IP'' --query 'Reservations[].Instances[0].InstanceId' --output text)"
 
 if [ "$INSTANCE_ID" == "" ]; then
-    printf "The domain name provided doens't exist. Please double check the name and try again.\nOR Ensure the the route 53 entry contains a PRIVATE ip address.\n"
-    exit
+    echo -e "The domain name provided doesn't exist. Please double check the name and try again.\nOR Ensure the the route 53 entry contains a PRIVATE ip address.\n"
+    exit 1
 fi
 
 echo "[INFO] Found Private IP for $INSTANCE_ID: $PRIVATE_IP"
