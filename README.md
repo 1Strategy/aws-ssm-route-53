@@ -5,7 +5,7 @@
 https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html
 
 
-####Prerequisites
+#### Prerequisites
 Installation of the AWS Command Line Interface
 ```
 pip install aws-cli
