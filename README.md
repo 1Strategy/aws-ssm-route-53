@@ -28,12 +28,12 @@ https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-get
 
 * IAM permissions to access SSM session manager
 
+* A Route 53 Hosted Zone with Private Ips
 
 ## Installation
 * Clone the repo locally
 * `chmod +x ssh-into` to allow it to execute
 * Copy the `ssh-into` to your /usr/local/bin/ or otherwise add it to your `PATH`
-* `ssh-into []`
 
 ### Optional - Add to AWS CLI
 
@@ -43,9 +43,18 @@ Add the following block to `~/.aws/cli/alias`
     bash <path/to/ssh-into/installtion/location> $@
   }; f
 ```
+## Usage
 
-`aws ssh-into <server>.<domain>.com`
+```
+aws ssh-into  [ssh-user@]<server>.<domain>.com
+              [-i | --identity-file] <path/to/pem/file>
+              [-p | --profile] <aws-cli-profile-name>
+```
 
 
+### Examples:
+`ssh-into ec2-user@www.1strategy-sandbox.com` -> Access instance private ip using SSH and the default ssh key `~/.ssh/id_rsa`
+`ssh-into www.1strategy-sandbox.com` -> Access instance using session manager
+`ssh-into ec2-user@www.1strategy-sandbox.com -i ~/.ssh/1strategy.pem` -> Access instance private ip using SSH and `1strategy.pem` ssh key.
 
 
