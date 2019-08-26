@@ -53,8 +53,8 @@ aws ssh-into  [ssh-user@]<server>.<domain>.com
 
 
 ### Examples:
-`ssh-into ec2-user@www.1strategy-sandbox.com` -> Access instance private ip using SSH and the default ssh key `~/.ssh/id_rsa`
-`ssh-into www.1strategy-sandbox.com` -> Access instance using session manager
-`ssh-into ec2-user@www.1strategy-sandbox.com -i ~/.ssh/1strategy.pem` -> Access instance private ip using SSH and `1strategy.pem` ssh key.
+* `ssh-into ec2-user@www.1strategy-sandbox.com` -> Access instance private ip using SSH and the default ssh key `~/.ssh/id_rsa`
+* `ssh-into www.1strategy-sandbox.com` -> Access instance using session manager
+* `ssh-into ec2-user@www.1strategy-sandbox.com -i ~/.ssh/1strategy.pem` -> Access instance private ip using SSH and `1strategy.pem` ssh key.
 
 
