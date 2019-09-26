@@ -69,6 +69,10 @@ else
         echo -e "The domain name provided doesn't exist. Please double check the name and try again.\nOR Ensure the the route 53 entry contains a PRIVATE ip address."
         exit 1
     fi
+    if [[ ! "$INSTANCE_ID" =~ $instance_id_pattern ]]; then
+        echo -e "Retrieved instance id $INSTANCE_ID does not seem valid!"
+        exit 1
+    fi
 
     echo "[INFO] Found Private IP for $INSTANCE_ID: $PRIVATE_IP"
 fi
