@@ -1,16 +1,16 @@
 # aws-ssh-ssm-script
 
 ## ** Please note that this script is currently BETA **
-Please submit a and issue/pull requests with any suggestions.
+Please submit an issue/pull request with any suggestions.
 
 TODO:
 * Add support for Public IPs (via DNS entry)
-* Add support for IPs or instance ids (i-abc123)
+* Add support for IPs
 * Improve error handling
 
 ------
 
-The purpose of this script is to server as a unified way to SSH OR SSM (start-session) into an EC2 instance using a Private Hosted Zone in Route 53 for DNS lookups. 
+The purpose of this script is to serve as a unified way to SSH OR SSM (start-session) into an EC2 instance using a Private Hosted Zone in Route 53 for DNS lookups. 
 
 https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html
 
@@ -52,12 +52,19 @@ Add the following block to `~/.aws/cli/alias`
 aws ssh-into  [ssh-user@]<server>.<domain>.com
               [-i | --identity-file] <path/to/pem/file>
               [-p | --profile] <aws-cli-profile-name>
+
+aws ssh-into  [ssh-user@]i-instanceid
+              [-i | --identity-file] <path/to/pem/file>
+              [-p | --profile] <aws-cli-profile-name>
 ```
 
 
 ### Examples:
-* `ssh-into ec2-user@www.1strategy-sandbox.com` -> Access instance private ip using SSH and the default ssh key `~/.ssh/id_rsa`
 * `ssh-into www.1strategy-sandbox.com` -> Access instance using session manager
+* `ssh-into ec2-user@www.1strategy-sandbox.com` -> Access instance private ip using SSH and the default ssh key `~/.ssh/id_rsa`
 * `ssh-into ec2-user@www.1strategy-sandbox.com -i ~/.ssh/1strategy.pem` -> Access instance private ip using SSH and `1strategy.pem` ssh key.
+* `ssh-into i-a47461d858527dd824` -> Access instance using session manager
+* `ssh-into ec2-user@i-a47461d858527dd824` -> Access instance private ip using SSH and the default ssh key `~/.ssh/id_rsa`
+* `ssh-into ec2-user@i-a47461d858527dd824 -i ~/.ssh/1strategy.pem` -> Access instance private ip using SSH and `1strategy.pem` ssh key.
 
 
