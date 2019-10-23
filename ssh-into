@@ -55,14 +55,14 @@ else
         exit 1
     fi
 
-    HOSTED_ZONE_ID="$(aws route53 list-hosted-zones --query 'HostedZones[?Name ==`'$DOMAIN'.`].Id' --profile $AWS_PROFILE 2> /dev/null | python -c 'import sys, json; print json.load(sys.stdin)[0].split("/")[2]' 2> /dev/null)"
+    HOSTED_ZONE_ID="$(aws route53 list-hosted-zones --query 'HostedZones[?Name ==`'$DOMAIN'.`].Id' --profile $AWS_PROFILE --output json 2> /dev/null | python -c 'import sys, json; print json.load(sys.stdin)[0].split("/")[2]' 2> /dev/null)"
 
     if [[ "$HOSTED_ZONE_ID" == "null" || -z "$HOSTED_ZONE_ID" ]]; then
         echo "$DOMAIN doesn't appear to be Route 53 Private Hosted Zone in your account. Please double check the domain."
         exit 1
     fi
 
-    PRIVATE_IP="$(aws route53 list-resource-record-sets --hosted-zone-id $HOSTED_ZONE_ID --query 'ResourceRecordSets[?contains(Name,`'$SERVER'`)].ResourceRecords[].Value' --profile $AWS_PROFILE 2> /dev/null | python -c 'import sys, json; print json.load(sys.stdin)[0]' 2> /dev/null)"
+    PRIVATE_IP="$(aws route53 list-resource-record-sets --hosted-zone-id $HOSTED_ZONE_ID --query 'ResourceRecordSets[?contains(Name,`'$SERVER'`)].ResourceRecords[].Value' --profile $AWS_PROFILE --output json 2> /dev/null | python -c 'import sys, json; print json.load(sys.stdin)[0]' 2> /dev/null)"
     INSTANCE_ID="$(aws ec2 describe-instances --profile $AWS_PROFILE --filters 'Name=private-ip-address,Values='$PRIVATE_IP'' --query 'Reservations[].Instances[0].InstanceId' --output text 2> /dev/null)"
 
     if [[ -z "$INSTANCE_ID" ]]; then
@@ -70,7 +70,7 @@ else
         exit 1
     fi
     if [[ ! "$INSTANCE_ID" =~ $instance_id_pattern ]]; then
-        echo -e "Retrieved instance id $INSTANCE_ID does not seem valid!"
+        echo "Retrieved instance id $INSTANCE_ID does not seem valid!"
         exit 1
     fi
 
