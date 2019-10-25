@@ -46,17 +46,16 @@ instance_id_pattern='^m?i-[[:xdigit:]]+$'
 if [[ $REMAINING_INPUT =~ $instance_id_pattern ]]; then
     INSTANCE_ID="$REMAINING_INPUT"
 else
-    DOMAIN="${REMAINING_INPUT#*.}"
     SERVER="${REMAINING_INPUT%%.*}"
+    DOMAIN="${REMAINING_INPUT#*.}"
 
-    aws route53 list-hosted-zones --query 'HostedZones[?Name ==`'$DOMAIN'.`].Id' --profile $AWS_PROFILE > /dev/null 2>&1
+    HOSTED_ZONE_ID="$(aws route53 list-hosted-zones --query 'HostedZones[?Name ==`'$DOMAIN'.`].Id' --profile $AWS_PROFILE --output json 2> /dev/null)"
     if (( $? != 0 )); then
         echo -e "You don't appear to have the correct permissions. \nPlease ensure the AWS profile that you're using has the correct Route 53 permissions."
         exit 1
     fi
 
-    HOSTED_ZONE_ID="$(aws route53 list-hosted-zones --query 'HostedZones[?Name ==`'$DOMAIN'.`].Id' --profile $AWS_PROFILE --output json 2> /dev/null | python -c 'import sys, json; print json.load(sys.stdin)[0].split("/")[2]' 2> /dev/null)"
-
+    HOSTED_ZONE_ID="$(python -c 'import sys, json; print json.load(sys.stdin)[0].split("/")[2]' <<< "$HOSTED_ZONE_ID" 2> /dev/null)"
     if [[ "$HOSTED_ZONE_ID" == "null" || -z "$HOSTED_ZONE_ID" ]]; then
         echo "$DOMAIN doesn't appear to be Route 53 Private Hosted Zone in your account. Please double check the domain."
         exit 1
@@ -84,6 +83,9 @@ if [[ -z "$USERNAME" ]]; then
 else
     if [[ -n "$SSH_KEY" ]]; then
         SSH_COMMAND=" -i $SSH_KEY"
+    fi
+    if [[ -n "$SERVER" && -n "$DOMAIN" ]]; then
+        SSH_COMMAND=" -o "HostKeyAlias=${SERVER}.${DOMAIN}""
     fi
     SSH_COMMAND="ssh${SSH_COMMAND} $USERNAME@$INSTANCE_ID"
     echo "$SSH_COMMAND"
