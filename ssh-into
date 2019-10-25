@@ -46,8 +46,8 @@ instance_id_pattern='^m?i-[[:xdigit:]]+$'
 if [[ $REMAINING_INPUT =~ $instance_id_pattern ]]; then
     INSTANCE_ID="$REMAINING_INPUT"
 else
-    DOMAIN="${REMAINING_INPUT#*.}"
     SERVER="${REMAINING_INPUT%%.*}"
+    DOMAIN="${REMAINING_INPUT#*.}"
 
     aws route53 list-hosted-zones --query 'HostedZones[?Name ==`'$DOMAIN'.`].Id' --profile $AWS_PROFILE > /dev/null 2>&1
     if (( $? != 0 )); then
@@ -85,7 +85,7 @@ else
     if [[ -n "$SSH_KEY" ]]; then
         SSH_COMMAND=" -i $SSH_KEY"
     fi
-    SSH_COMMAND="ssh${SSH_COMMAND} $USERNAME@$INSTANCE_ID"
+    SSH_COMMAND="ssh${SSH_COMMAND} -o "HostKeyAlias=${SERVER}.${DOMAIN}" $USERNAME@$INSTANCE_ID"
     echo "$SSH_COMMAND"
     $SSH_COMMAND
 fi
