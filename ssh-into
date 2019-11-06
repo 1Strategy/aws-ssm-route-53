@@ -85,7 +85,7 @@ else
         SSH_COMMAND=" -i $SSH_KEY"
     fi
     if [[ -n "$SERVER" && -n "$DOMAIN" ]]; then
-        SSH_COMMAND=" -o "HostKeyAlias=${SERVER}.${DOMAIN}""
+        SSH_COMMAND="${SSH_COMMAND} -o "HostKeyAlias=${SERVER}.${DOMAIN}""
     fi
     SSH_COMMAND="ssh${SSH_COMMAND} $USERNAME@$INSTANCE_ID"
     echo "$SSH_COMMAND"
