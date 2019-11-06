@@ -81,6 +81,7 @@ if [[ -z "$USERNAME" ]]; then
     # echo "aws ssm start-session --target $INSTANCE_ID --profile $AWS_PROFILE"
     aws ssm start-session --target $INSTANCE_ID --profile $AWS_PROFILE
 else
+    unset SSH_COMMAND
     if [[ -n "$SSH_KEY" ]]; then
         SSH_COMMAND=" -i $SSH_KEY"
     fi
