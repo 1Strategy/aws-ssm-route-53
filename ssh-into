@@ -1,42 +1,45 @@
 #!/usr/bin/env bash
 
-display_usage() { 
-    echo -e "Usage: ssh-into  [user@]server.domain.tld \n\t\t [-i|-identity_file <path to ssh file>] \n\t\t [-p|--profile <AWS Profile>]\n\n       ssh-into  [user@]i-instanceid \n\t\t [-i|-identity_file <path to ssh file>] \n\t\t [-p|--profile <AWS Profile>]"
+display_usage() {
+    echo -e 'ssh-into connects to an instance over SSM either directly or by using ssh over SSM.
+Usage: ssh-into [user@]<destination> [options...]
+Destination: Either a hostname (server.env) or an instance-id
+
+Optional Arguments:
+ -i, --identity_file      Identity file (~/.ssh/id_rsa)
+ -p, --profile            AWS Profile (default)
+ -h, --help               Displays this help text'
 }
 
-AWS_PROFILE="default"
-SSH_KEY=""
-USERNAME=""
+AWS_PROFILE='default'
 
-if [[ -z "$1" ]]; then
-    display_usage
-    exit 0
-fi
-
+params=( $@ )
 INPUT="$1"
-shift
 
-while [[ -n "$1" ]]; do
-    case "$1" in
-    -i | --identity_file)
-        shift
-        SSH_KEY="$1"
-        ;;
-    -p | --profile)
-        shift
-        AWS_PROFILE="$1"
-        ;;
-    *)
+# parse args
+i=0
+for arg in "${params[@]}"; do
+    if [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
         display_usage
         exit 0
-        ;;
-    esac
-    shift
+    fi
+    if [[ "$arg" == "-i" || "$arg" == "--identity_file" ]]; then
+        SSH_KEY="${params[$i+1]}"
+    fi
+    if [[ "$arg" == "-p" || "$arg" == "--profile" ]]; then
+        AWS_PROFILE="${params[$i+1]}"
+    fi
+    ((i++))
 done
 
-# echo $AWS_PROFILE
-# echo $SSH_KEY
+# check required args were provided
+if [[ -z "$INPUT" ]]; then
+    echo 'ERROR: No server specified, please specify a server to connect to!' 1>&2
+    display_usage
+    exit 1
+fi
 
+# extract username, if provided
 if [[ $INPUT =~ "@" ]]; then
     USERNAME="${INPUT%%@*}"
 fi
@@ -44,8 +47,10 @@ REMAINING_INPUT="${INPUT##*@}"
 
 instance_id_pattern='^m?i-[[:xdigit:]]+$'
 if [[ $REMAINING_INPUT =~ $instance_id_pattern ]]; then
+    # we already have the instance id
     INSTANCE_ID="$REMAINING_INPUT"
 else
+    # we need to look up the instance id
     SERVER="${REMAINING_INPUT%%.*}"
     DOMAIN="${REMAINING_INPUT#*.}"
 
@@ -77,10 +82,12 @@ else
 fi
 
 if [[ -z "$USERNAME" ]]; then
+    # connect with ssm directly
     echo "[INFO] Username not provided, using aws ssm start-session command."
     # echo "aws ssm start-session --target $INSTANCE_ID --profile $AWS_PROFILE"
     aws ssm start-session --target $INSTANCE_ID --profile $AWS_PROFILE
 else
+    # connect with ssh over ssm
     unset SSH_COMMAND
     if [[ -n "$SSH_KEY" ]]; then
         SSH_COMMAND=" -i $SSH_KEY"
