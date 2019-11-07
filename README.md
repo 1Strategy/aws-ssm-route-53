@@ -41,7 +41,7 @@ Add the following block to `~/.aws/cli/alias`
 ## Usage
 ### ssh-into
 ```
-Usage: ssh-into <destination> [options...]
+Usage: ssh-into [user@]<destination> [options...]
 Destination: Either a hostname (server.env) or an instance-id
 
 Optional Arguments:

@@ -2,7 +2,7 @@
 
 display_usage() {
     echo -e 'ssh-into connects to an instance over SSM either directly or by using ssh over SSM.
-Usage: ssh-into <destination> [options...]
+Usage: ssh-into [user@]<destination> [options...]
 Destination: Either a hostname (server.env) or an instance-id
 
 Optional Arguments:
