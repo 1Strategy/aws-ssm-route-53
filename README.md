@@ -1,4 +1,4 @@
-# aws-ssh-ssm-script
+# aws-ssm-route-53
 
 ### ** Please note that these scripts are currently BETA **
 Please submit an issue/pull request with any suggestions.
