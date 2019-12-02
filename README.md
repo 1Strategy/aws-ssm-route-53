@@ -35,7 +35,7 @@ https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.htm
 Add the following block to `~/.aws/cli/alias`
 ```ssh-into = 
   !f() {
-    bash <path/to/ssh-into/installtion/location> $@
+    bash <path/to/ssh-into/installation/location> $@
   }; f
 ```
 ## Usage
