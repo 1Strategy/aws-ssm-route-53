@@ -63,7 +63,7 @@ resolve_hostname() {
 	if [[ -z "$host" ]]; then
 		return 1
 	fi
-	echo "$(aws route53 list-resource-record-sets --hosted-zone-id $HOSTED_ZONE_ID --query 'ResourceRecordSets[?Name == `'$host'.`].ResourceRecords[].Value' --profile $AWS_PROFILE --output json 2> /dev/null | python -c 'import sys, json; print json.load(sys.stdin)[0]')"
+	echo "$(aws route53 list-resource-record-sets --hosted-zone-id $HOSTED_ZONE_ID --query 'ResourceRecordSets[?Name == `'$host'.`].ResourceRecords[].Value' --profile $AWS_PROFILE --output text 2> /dev/null | head -n 1)"
 }
 
 instance_id_pattern='^m?i-[[:xdigit:]]+$'
@@ -74,13 +74,13 @@ else
 	SERVER="${INPUT%%.*}"
 	DOMAIN="${INPUT#*.}"
 
-	HOSTED_ZONE_ID="$(aws route53 list-hosted-zones --query 'HostedZones[?Name ==`'$DOMAIN'.`].Id' --profile $AWS_PROFILE --output json 2> /dev/null)"
+	ZONE_PATH="$(aws route53 list-hosted-zones --query 'HostedZones[?Name ==`'$DOMAIN'.`].Id' --profile $AWS_PROFILE --output text 2> /dev/null)"
 	if (( $? != 0 )); then
 		echo -e "You don't appear to have the correct permissions. \nPlease ensure the AWS profile that you're using has the correct Route 53 permissions."
 		exit 1
 	fi
 
-	HOSTED_ZONE_ID="$(python -c 'import sys, json; print json.load(sys.stdin)[0].split("/")[2]' <<< "$HOSTED_ZONE_ID" 2> /dev/null)"
+	HOSTED_ZONE_ID="${ZONE_PATH##*/}"
 	if [[ "$HOSTED_ZONE_ID" == "null" || -z "$HOSTED_ZONE_ID" ]]; then
 		echo "$DOMAIN doesn't appear to be Route 53 Private Hosted Zone in your account. Please double check the domain."
 		exit 1
